@@ -111,24 +111,40 @@ public:
         return path;
     }
 
-private:
+    static constexpr char const* getFromPath(char const* path) {
+        for (auto const& rootFolder : rootFolders) {
+            int first = cexpr_find_first<charCase>(path, rootFolder);
+            if (first != -1) {
+                return path + first + cexpr_strlen(rootFolder);
+            }
+        }
+        return path;
+    }
+
     static constexpr char const* rootFolders[] = { "\\cpp-utils\\", "/cpp-utils/" };
-    
+
+private:
     char const* path;
 };
+
 static_assert(cexpr_streq<CharCase::None>(
-    "constexpr-tests\\constexpr-tests.cpp", 
+    "constexpr-tests\\constexpr-tests.cpp",
     ModuleName<CharCase::None>(__FILE__).get()
-), "");
+    ), "");
 
 static_assert(not cexpr_streq<CharCase::None>(
-    "constexpr-tests\\constexpr-tests.cpp", 
+    "constexpr-tests\\constexpr-tests.cpp",
     ModuleName<CharCase::None>("C:\\some\\folders\\CPP-UTILS\\constexpr-tests\\constexpr-tests.cpp").get()
-), "");
+    ), "");
 static_assert(cexpr_streq<CharCase::None>(
-    "constexpr-tests\\constexpr-tests.cpp", 
+    "constexpr-tests\\constexpr-tests.cpp",
     ModuleName<CharCase::CaseInsensitive>("C:\\some\\folders\\CPP-UTILS\\constexpr-tests\\constexpr-tests.cpp").get()
-), "");
+    ), "");
+
+static_assert(cexpr_streq<defaultCharCaseStrategy>(
+    ModuleName<defaultCharCaseStrategy>::getFromPath(__FILE__),
+    ModuleName<defaultCharCaseStrategy>(__FILE__).get()),
+    "");
 
 int main() {
     constexpr ModuleName<defaultCharCaseStrategy> moduleName(__FILE__);
